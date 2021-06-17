@@ -7,12 +7,18 @@ import MealItem from './MealItem/MealItem';
 const AvailableMeals = () => {
   const [meals, setMeals] = useState([]);
   const [isLoading, setisLoading] = useState(true);
+  const [error, setError] = useState();
 
   useEffect(() => {
     const fetchMeals = async () => {
       const response = await fetch(
         'https://meal-demo-app-c2de1-default-rtdb.firebaseio.com/meals.json'
       );
+
+      if (!response.ok) {
+        throw new Error('Something went wrong');
+      }
+
       const responseData = await response.json();
 
       const loadedMeals = [];
@@ -29,13 +35,24 @@ const AvailableMeals = () => {
       setisLoading(false);
     };
 
-    fetchMeals();
+    fetchMeals().catch(error => {
+      setisLoading(false);
+      setError(error.message);
+    });
   }, []);
 
   if (isLoading) {
     return (
       <section className={classes.MealsLoading}>
         <h2>Loading...</h2>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className={classes.MealsError}>
+        <h2>{error}</h2>
       </section>
     );
   }
